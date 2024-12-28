@@ -218,6 +218,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerUI: {fileID: 535078662120280052, guid: 6b3b007e218717b44847efdf7f35533f, type: 3}
   hp: 100
+  looking_dir: 1
+  block_stamina: 50
   speed: 7
   jumped: 0
   jumpPower: 5
@@ -236,8 +238,6 @@ MonoBehaviour:
   swordDancing: 0
   FinalSwordDancing: 0
   swordDanceATK_Range: {x: 2, y: 2}
-  looking_dir: 0
-  block_stamina: 50
   audioSources:
   - {fileID: 8300000, guid: a4e9007abaaec304fadf727354d682ef, type: 3}
   - {fileID: 8300000, guid: 755414367d4bffb49955cbee2ed53916, type: 3}

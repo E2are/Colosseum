@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Player : MonoBehaviour, IDamageAble
 {
@@ -14,6 +13,8 @@ public class Player : MonoBehaviour, IDamageAble
 
     [Header("PlayerStat")]
     public float hp = 100;
+    public int looking_dir;
+    public float block_stamina = 10f;
     public float speed = 10f;
     float Max_Speed;
     public bool jumped = false;
@@ -42,10 +43,7 @@ public class Player : MonoBehaviour, IDamageAble
     public bool swordDancing = false;
     public bool FinalSwordDancing = false;
     public Vector2 swordDanceATK_Range = new Vector2(2, 2);
-    [Space(5f)]
-    [Header("Player Def Stat")]
-    [HideInInspector]public int looking_dir;
-    public float block_stamina = 10f;
+    
     [Header("Player Sounds")]
     public AudioClip[] audioSources;
     public enum audios
@@ -93,7 +91,7 @@ public class Player : MonoBehaviour, IDamageAble
                     if (!spiningAtking)
                     {
                         Jump();
-
+                        if(!swordDancing)
                         Attack1();
                         if(!jumped)
                         SwordDance();
@@ -445,7 +443,7 @@ public class Player : MonoBehaviour, IDamageAble
             {
                 if (block_stamina > dmg)
                 {
-                    block_stamina -= dmg;
+                    block_stamina -= dmg/2;
                     rigid.AddForce(Vector2.right * dir * dmg / 10, ForceMode2D.Impulse);
                     PlaySound(audios.block);
                 }
