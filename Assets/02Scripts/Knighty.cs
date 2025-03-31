@@ -23,6 +23,7 @@ public class Knighty : IBoss, IDamageAble
     bool attacking;
     float atk1delayTimer = 0;
     public bool turnAttackinghit = false;
+    bool earthQuakeHit = false;
     public Vector2 Attack1Zone = new Vector2(2, 2);
     public Vector2 Attack2Zone = new Vector2(5, 1);
     public bool targetpulled = false;
@@ -237,7 +238,7 @@ public class Knighty : IBoss, IDamageAble
             anim.SetTrigger("TurnAtk");
             audioSource.pitch = 1.2f;
             yield return new WaitForSeconds(1.1f);
-            if (turnAttackinghit || Vector2.Distance(transform.position, target.transform.position) < Attack1Zone.x * 2.4f)
+            if (!turnAttackinghit && earthQuakeHit || Vector2.Distance(transform.position, target.transform.position) < Attack1Zone.x*2.4f)
             {
                 anim.SetTrigger("Attack2");
                 rigid.AddForce(Vector2.right * move_dir * move_Speed + Vector2.up * 2,ForceMode2D.Impulse);
@@ -323,6 +324,7 @@ public class Knighty : IBoss, IDamageAble
     public void TurnAtk(int timethedir = -1)
     {
         turnAttackinghit = false;
+        earthQuakeHit = false;
         move_dir *= timethedir;
         Camera.main.GetComponent<CameraFollow>().DoImppulse(1f);
         Collider2D[] collider = Physics2D.OverlapBoxAll(new Vector2(transform.position.x + move_dir * 2f, transform.position.y - 1f), Attack2Zone, 0);
@@ -343,6 +345,7 @@ public class Knighty : IBoss, IDamageAble
             Player player = target.GetComponent<Player>();
             if (player != null && !player.jumped)
             {
+                earthQuakeHit = true;
                 player.OnDamaged(0, 0, true);
                 player.GetComponent<Rigidbody2D>().AddForce(Vector2.right * -move_dir * Vector2.Distance(transform.position, target.transform.position) * 1.4f + Vector2.up * Vector2.Distance(transform.position, target.transform.position) * 0.5f, ForceMode2D.Impulse);
                 player.jumped = true;
@@ -411,7 +414,7 @@ public class Knighty : IBoss, IDamageAble
             }
             yield return null;
         }
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.4f);
         for (int i = zoneShow.Count-1; i >= 0; i--)
         {
             GameObject destroy = zoneShow[i];
@@ -429,7 +432,7 @@ public class Knighty : IBoss, IDamageAble
                 GameObject atkPrefab2 = Instantiate(PaternAtkPrefab);
                 atkPrefab2.transform.position = hit2.point;
                 atkPrefab2.GetComponent<SpriteRenderer>().flipX = true;
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.1f);
             }
             yield return null;
         }
@@ -451,7 +454,7 @@ public class Knighty : IBoss, IDamageAble
             }
             yield return null;
         }
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.4f);
         for (int i = zoneShow.Count-1; i >= 0; i--)
         {
             GameObject destroy = zoneShow[i];
@@ -469,7 +472,7 @@ public class Knighty : IBoss, IDamageAble
                 GameObject atkPrefab2 = Instantiate(PaternAtkPrefab);
                 atkPrefab2.transform.position = hit2.point;
                 atkPrefab2.GetComponent<SpriteRenderer>().flipX = true;
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.1f);
             }
             yield return null;
         }

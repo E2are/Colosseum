@@ -9,6 +9,7 @@ public class ManagerManager : InteractableNPC
     public int selectedBossIndex;
     public GameObject BossSets;
     BossSelection[] BossSelections;
+    public Scrollbar Scrollbar;
     bool bossSelectionActivated = false;
     private void Start()
     {
@@ -78,12 +79,16 @@ public class ManagerManager : InteractableNPC
             BossSelections[selectedBossIndex].GetComponent<Outline>().enabled = false;
             selectedBossIndex++;
             BossSelections[selectedBossIndex].GetComponent<Outline>().enabled = true;
+            Scrollbar.value = (selectedBossIndex + 1 / BossSelections.Length);
+            Debug.Log((selectedBossIndex + 1 / BossSelections.Length));
         }
         if(Input.GetKeyDown(KeyCode.LeftArrow)&&selectedBossIndex > 0)
         {
             BossSelections[selectedBossIndex].GetComponent<Outline>().enabled = false;
             selectedBossIndex--;
             BossSelections[selectedBossIndex].GetComponent<Outline>().enabled = true;
+            Scrollbar.value = (selectedBossIndex + 1 / BossSelections.Length);
+            Debug.Log((selectedBossIndex + 1 / BossSelections.Length));
         }
         if (Input.GetKeyDown(KeyCode.Return))
         {

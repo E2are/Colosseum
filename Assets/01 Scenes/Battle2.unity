@@ -2371,7 +2371,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -1587020732352424969, guid: a5b8791db9944074ba12fa8c2048d997, type: 2}
-  m_audioClip: {fileID: 8300000, guid: da2135f693d20ca4e8bf116a452a4d50, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 97311b5a680a9f14dafcd1b4404814f6, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.5
   m_Pitch: 1
@@ -2500,7 +2500,7 @@ Camera:
   far clip plane: 1000
   field of view: 75
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 5.4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

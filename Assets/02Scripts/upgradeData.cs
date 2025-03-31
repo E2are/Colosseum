@@ -8,15 +8,15 @@ using UnityEngine;
 
 public class Json : MonoBehaviour
 {
-    private void Start()
+    private void Awake()
     {
-        if (LoadJsonFile<UpgradeData>(Application.dataPath, "UpgradeData") == null)
-        {
-            UpgradeData UD = new UpgradeData();
-            string UpgradeJson = ObjectToJson(UD);
-            Debug.Log(UpgradeJson);
-            CreateJsonFile(Application.dataPath, "UpgradeData", UpgradeJson);
-        }
+        UpgradeData UD = new UpgradeData();
+        string UpgradeJson = ObjectToJson(UD);
+        Debug.Log(UpgradeJson);
+        string path = Path.Combine(Application.dataPath, string.Format("{0}/{1}.json", Application.dataPath, "UpgradeData"));
+        if(!File.Exists(path))
+        CreateJsonFile(Application.dataPath, "UpgradeData", UpgradeJson);
+        
     }
     void CreateJsonFile(string createpath, string fileName, string jsonData)
     {
@@ -50,7 +50,7 @@ public class Json : MonoBehaviour
 
 public class UpgradeData
 {
-    public int[] UpgradedCnt = { 0, 0, 0, 0};
+    public int[] UpgradedCnt = new int[4];
     public enum Upgrades
     {
         Attack,
