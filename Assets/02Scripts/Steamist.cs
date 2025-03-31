@@ -9,6 +9,8 @@ public class Steamist : IBoss, IDamageAble
 
     GameObject target;
 
+    public bool IsCutScene = true;
+
     public float move_Speed = 5f;
     public int move_dir;
 
@@ -63,8 +65,6 @@ public class Steamist : IBoss, IDamageAble
 
         GameManager.Instance.Boss = this;
 
-        Invoke("wake", 1f);
-
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         material = spriteRenderer.material;
 
@@ -72,9 +72,11 @@ public class Steamist : IBoss, IDamageAble
     }
 
 
-    private void wake()
+    public void wake()
     {
         waken = true;
+        rigid.velocity = Vector2.zero;
+        GameManager.Instance.GameStarted = true;
     }
 
     void Update()
@@ -130,7 +132,7 @@ public class Steamist : IBoss, IDamageAble
 
     private void Move()
     {
-        if (Vector2.Distance(transform.position, target.transform.position) > Attack1Zone.x)
+        if (Mathf.Abs(transform.position.x - target.transform.position.x) > Attack1Zone.x)
         {
             move_dir = target.transform.position.x > transform.position.x ? 1 : -1;
             gameObject.GetComponent<SpriteRenderer>().flipX = move_dir < 0;
@@ -143,18 +145,16 @@ public class Steamist : IBoss, IDamageAble
             atk1delay = attack1_Delay / 2;
             anim.SetBool("running", false);
         }
-
-
     }
     /*private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawCube(new Vector2(transform.position.x + move_dir, transform.position.y - 0.5f), Attack1Zone*1.5f);
+        Gizmos.DrawCube(new Vector2(transform.position.x + move_dir * 1.4f, transform.position.y - 0.5f), Attack1Zone);
     }*/
 
     void Attack1()
     {
-        if (Vector2.Distance(transform.position, target.transform.position) > Attack1Zone.x * 1.5 && !attacking)
+        if (Mathf.Abs(transform.position.x - target.transform.position.x) > Attack1Zone.x * 2 && !attacking)
         {
             StartCoroutine(delayedPaterntomove());
         }
@@ -201,6 +201,7 @@ public class Steamist : IBoss, IDamageAble
             move_dir = target.transform.position.x > transform.position.x ? 1 : -1;
             gameObject.GetComponent<SpriteRenderer>().flipX = move_dir < 0;
         }
+        turn();
         attacking = false;
         anim.SetBool("attacking", false);
         audioSource.pitch = 0;
@@ -209,12 +210,12 @@ public class Steamist : IBoss, IDamageAble
 
     public void CheckAtk1()
     {
-        Collider2D[] collider = Physics2D.OverlapBoxAll(new Vector2(transform.position.x + move_dir, transform.position.y - 0.5f), Attack1Zone, 0);
+        Collider2D[] collider = Physics2D.OverlapBoxAll(new Vector2(transform.position.x + move_dir*1.4f, transform.position.y - 0.5f), Attack1Zone, 0);
         foreach (Collider2D i in collider)
         {
             if (i.gameObject.tag == "Player")
             {
-                i.GetComponent<Player>().OnDamaged(atk1_dmg, move_dir);
+                i.GetComponent<Player>().OnDamaged(atk1_dmg, move_dir, true);
             }
         }
     }
@@ -226,18 +227,23 @@ public class Steamist : IBoss, IDamageAble
         {
             if (i.gameObject.tag == "Player")
             {
-                i.GetComponent<Player>().OnDamaged(atk1_dmg / 2, i.GetComponent<Player>().looking_dir);
+                i.GetComponent<Player>().OnDamaged(atk1_dmg / 2, i.GetComponent<Player>().looking_dir, true);
             }
         }
         Camera.main.GetComponent<CameraFollow>().DoImppulse(0.2f);
         PlaySound(audios.dead);
     }
 
+    public void turn()
+    {
+        move_dir = target.transform.position.x > transform.position.x ? 1 : -1;
+        gameObject.GetComponent<SpriteRenderer>().flipX = move_dir < 0;
+    }
+
 void atkoff()
     {
         attacking = false;
-        move_dir = target.transform.position.x > transform.position.x ? 1 : -1;
-        gameObject.GetComponent<SpriteRenderer>().flipX = move_dir < 0;
+        turn();
         nowPatern = Patern.idle;
     }
 
@@ -284,7 +290,7 @@ void atkoff()
         GameManager.Instance.win();
     }
 
-    public void OnDamaged(float dmg, int dir)
+    public void OnDamaged(float dmg, int dir, bool isKnockbackable = false)
     {
             hp -= dmg;
             if (hp <= maxhp / (availableSkillcnt + 1) && availableSkillcnt > 0)

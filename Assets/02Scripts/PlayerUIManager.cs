@@ -2,19 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Newtonsoft.Json;
+using System.IO;
+using System.Text;
+using TMPro;
 
 public class PlayerUIManager : MonoBehaviour
 {
     [SerializeField] Player player;
+    UpgradeData upgradeData;
     float Maxhp;
     public Slider hpSlider;
     public Slider delayedHpSlider;
     public Slider BlockStaminaSlider;
     public Slider delayedblockStaminaSlider;
+    public TMP_Text Money;
     float Max_BlockStamina;
     [Header("UIReferences")]
     public Image ui;
     public Sprite[] uis;
+
     private void Awake()
     {
         player = GameObject.Find("Player").GetComponent<Player>();
@@ -28,6 +35,8 @@ public class PlayerUIManager : MonoBehaviour
         delayedHpSlider.value = Mathf.Lerp(delayedHpSlider.value, hpSlider.value, Time.deltaTime / 0.5f);
         BlockStaminaSlider.value = player.block_stamina / Max_BlockStamina;
         delayedblockStaminaSlider.value = Mathf.Lerp(delayedblockStaminaSlider.value, BlockStaminaSlider.value, Time.deltaTime / 0.5f);
+        upgradeData = GameManager.Instance.LoadJsonFile<UpgradeData>(Application.dataPath, "UpgradeData");
+        Money.text = "coin : " + upgradeData.coin.ToString();
 
         if (player.hp <= 20)
         {

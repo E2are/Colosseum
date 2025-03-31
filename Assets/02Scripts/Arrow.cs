@@ -8,7 +8,9 @@ public class Arrow : MonoBehaviour
     public Vector3 dir;
     [HideInInspector]
     public float Damage;
-    
+
+    public bool Unblockable = false;
+
     public float speed;
 
     private void Start()
@@ -26,7 +28,14 @@ public class Arrow : MonoBehaviour
         GetComponent<Animator>().enabled = false;
         if(collision.CompareTag("Player"))
         {
-            collision.GetComponent<Player>().OnDamaged(Damage,(int)dir.x);
+            if (Unblockable)
+            {
+                collision.GetComponent<Player>().OnDamaged(Damage, 0, true);
+            }
+            else
+            {
+                collision.GetComponent<Player>().OnDamaged(Damage, (int)dir.x);
+            }
             GetComponent<BoxCollider2D>().enabled = false;
             Destroy(gameObject);
         }

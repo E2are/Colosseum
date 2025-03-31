@@ -4,36 +4,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ManagerManager : MonoBehaviour
+public class ManagerManager : InteractableNPC
 {
-    public static ManagerManager Instance;
-
-    public Canvas NPCCanvas;
-    public Image NPCImage;
-    public TMP_Text Text;
-    bool canvasActivated = false;
-
-    public Sprite[] NPCSprites;
     public int selectedBossIndex;
     public GameObject BossSets;
     BossSelection[] BossSelections;
     bool bossSelectionActivated = false;
-
-    public string[] Texts;
-    bool texting = false;
-    public bool entered = false;
-    int count = 0;
-    private void Awake()
-    {
-        if(Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(this);
-        }
-    }
     private void Start()
     {
         NPCCanvas.gameObject.SetActive(false);
@@ -55,7 +31,7 @@ public class ManagerManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.UpArrow) && !texting)
             {
                 texting = true;
-                StartTexting();
+                StartTexting(InteractTexts);
                 canvasActivated = !canvasActivated;
                 NPCCanvas.gameObject.SetActive(canvasActivated);
             }
@@ -71,6 +47,10 @@ public class ManagerManager : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             entered = true;
+            if(EnteredSign != null)
+            {
+                EnteredSign.gameObject.SetActive(entered);
+            }
         }
     }
 
@@ -79,9 +59,14 @@ public class ManagerManager : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             entered = false;
+            if (EnteredSign != null)
+            {
+                EnteredSign.gameObject.SetActive(entered);
+            }
             canvasActivated = false;
             if(NPCCanvas != null)
             NPCCanvas.gameObject.SetActive(canvasActivated);
+            StopAllCoroutines();
             texting = false;
         }
     }
@@ -108,31 +93,26 @@ public class ManagerManager : MonoBehaviour
 
     public void LoadCurrentSelectedBoss()
     {
+        GameManager.Instance.bettingData.selectedBossIndex = selectedBossIndex;
         LoadingScene.LoadScene(BossSelections[selectedBossIndex].GetBossScene());
     }
 
-    public void StartTexting()
-    {
-        StartCoroutine(Texting());
-        Text.text = "";
-    }
-
-    IEnumerator Texting()
+    protected override IEnumerator Texting(string[] texts)
     {
         yield return null;
-        while (Texts.Length > count )
+        while (texts.Length > count)
         {
-            string[] txt = Texts[count].Split(":");
+            string[] txt = texts[count].Split(":");
             if (NPCImage != null)
             {
                 NPCImage.sprite = NPCSprites[int.Parse(txt[1])];
             }
-            if (txt[2] !=null)
+            if (txt[2] != null)
             {
-                BossSets.SetActive(bool.Parse(txt[2]));
                 bossSelectionActivated = bool.Parse(txt[2]);
+                BossSets.SetActive(bossSelectionActivated);
             }
-            for(int i = 0; i < txt[0].Length; i++)
+            for (int i = 0; i < txt[0].Length; i++)
             {
                 Text.text += txt[0][i];
                 if (Input.GetKey(KeyCode.UpArrow))
@@ -147,19 +127,17 @@ public class ManagerManager : MonoBehaviour
                 {
                     break;
                 }
+                GetComponent<AudioSource>().Play();
             }
             if (!entered)
             {
                 break;
             }
-            yield return new WaitUntil(()=>Input.GetKeyDown(KeyCode.UpArrow));
-            Text.text = "";
             count++;
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.UpArrow));
+            if (count < texts.Length)
+                Text.text = "";
         }
         count = 0;
-        entered = false;
-        canvasActivated = false;
-        NPCCanvas.gameObject.SetActive(canvasActivated);
-        texting = false;
     }
 }

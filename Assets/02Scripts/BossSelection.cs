@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class BossSelection : MonoBehaviour
 {
+    public ManagerManager Manager;
+
     [SerializeField] int Index;
     [SerializeField] string SelectedBossScene;
 
@@ -15,9 +17,9 @@ public class BossSelection : MonoBehaviour
 
     public void SelectThisBoss()
     {
-        BossSelection[] Boss = ManagerManager.Instance.BossSets.GetComponentsInChildren<BossSelection>();
-        Boss[ManagerManager.Instance.selectedBossIndex].GetComponent<Outline>().enabled = false;
-        ManagerManager.Instance.selectedBossIndex = Index;
-        Boss[ManagerManager.Instance.selectedBossIndex].GetComponent<Outline>().enabled = true;
+        BossSelection[] Boss = Manager.BossSets.GetComponentsInChildren<BossSelection>();
+        Boss[Manager.selectedBossIndex].GetComponent<Outline>().enabled = false;
+        Manager.selectedBossIndex = Index;
+        Boss[Manager.selectedBossIndex].GetComponent<Outline>().enabled = true;
     }
 }

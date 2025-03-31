@@ -53,8 +53,10 @@ public class Archery : IBoss, IDamageAble
     [Space(10f)]
     [Header("ArcherStateMent")]
     public GameObject arrow;
+    [SerializeField] bool jumped = false;
     public AudioClip jumpSound;
     public float skillArrowtimes = 15f;
+    public CharacterGhostTrail CGT;
 
     Material material;
 
@@ -68,8 +70,6 @@ public class Archery : IBoss, IDamageAble
         maxhp = hp;
         nowPatern = Patern.idle;
 
-        Invoke("wake", 1f);
-
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         material = spriteRenderer.material;
 
@@ -77,9 +77,11 @@ public class Archery : IBoss, IDamageAble
     }
 
 
-    private void wake()
+    public void wake()
     {
         waken = true;
+        rigid.velocity = Vector2.zero;
+        GameManager.Instance.GameStarted = true;
     }
 
     void Update()
@@ -105,6 +107,7 @@ public class Archery : IBoss, IDamageAble
                             Dead();
                             break;
                     }
+                    CGT.doGenerate = jumped;
                 }
                 if (skilling)
                 {
@@ -124,6 +127,7 @@ public class Archery : IBoss, IDamageAble
             {
                 rigid.AddForce(Vector2.up * 3 + Vector2.right * move_dir * move_Speed * 0.75f, ForceMode2D.Impulse);
                 anim.SetBool("jumped", true);
+                jumped = true;
                 gameObject.layer = 9;
             }
         }
@@ -133,12 +137,12 @@ public class Archery : IBoss, IDamageAble
             RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1.5f, LayerMask.GetMask("Ground"));
             if (hit.distance < 1.4f && hit.collider != null)
             {
+                if(anim.GetBool("jumped"))Turn();
                 anim.SetBool("jumped", false);
+                jumped = false;
                 gameObject.layer = 8;
             }
         }
-
-
     }
 
     IEnumerator delayedPaterntomove()
@@ -173,6 +177,7 @@ public class Archery : IBoss, IDamageAble
         }
 
     }
+
     /*private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -208,6 +213,22 @@ public class Archery : IBoss, IDamageAble
         Collider2D[] col = Physics2D.OverlapBoxAll(new Vector2(transform.position.x, transform.position.y), Attack2Zone, 0);
         foreach (Collider2D i in col)
         {
+            if(Random.Range(0,3) == 0)
+            {
+                Collider2D[] co = Physics2D.OverlapBoxAll(new Vector2(transform.position.x + move_dir, transform.position.y), Attack2Zone - Vector2.right * 4, 0);
+                foreach(Collider2D i2 in co)
+                {
+                    if (i2.GetComponent<IDamageAble>() != null && i2.gameObject.CompareTag("Player"))
+                    {
+                        anim.SetTrigger("pushatk");
+
+                        i2.GetComponent<IDamageAble>().OnDamaged(0, move_dir, true);
+
+                        i2.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 3 + Vector2.right * move_dir * move_Speed, ForceMode2D.Impulse);
+                    }
+                    yield return new WaitForSeconds(0.3f);
+                }
+            }
             if (i.gameObject.tag == "Player" && Random.Range(0, 4) != 1)
             {
                 if (i.GetComponent<Rigidbody2D>().velocity.y < 0 || rigid.velocity.x == 0 && Random.Range(0, 2) != 1)
@@ -216,6 +237,7 @@ public class Archery : IBoss, IDamageAble
                     anim.SetBool("jumped", true);
                 }
                 rigid.AddForce(Vector2.up * 5 + Vector2.right * -move_dir * move_Speed * 1.5f, ForceMode2D.Impulse);
+                jumped = true;
                 audioSource.PlayOneShot(jumpSound);
                 gameObject.layer = 9;
             }
@@ -237,9 +259,15 @@ public class Archery : IBoss, IDamageAble
     void atkoff()
     {
         attacking = false;
+        anim.ResetTrigger("atk");
+        Turn();
+        nowPatern = Patern.idle;
+    }
+
+    public void Turn()
+    {
         move_dir = target.transform.position.x > transform.position.x ? 1 : -1;
         gameObject.GetComponent<SpriteRenderer>().flipX = move_dir < 0;
-        nowPatern = Patern.idle;
     }
 
     IEnumerator Patern1_Seq()
@@ -256,11 +284,13 @@ public class Archery : IBoss, IDamageAble
             arrows[i].GetComponent<Arrow>().dir = Vector2.right;
             arrows[i].GetComponent<Arrow>().speed = 0;
             arrows[i].GetComponent<Arrow>().Damage = atk1_dmg * 2;
+            arrows[i].GetComponent<Arrow>().Unblockable = true;
 
             paths[i] = Instantiate(zone1show, arrows[i].transform.position, arrows[i].transform.rotation);
 
             RaycastHit2D hit = Physics2D.Raycast(arrows[i].transform.position + arrows[i].transform.right, arrows[i].transform.right, 100f, LayerMask.GetMask("Ground"));
 
+            paths[i].gameObject.SetActive(true);
             paths[i].GetComponent<LineRenderer>().SetPosition(0, arrows[i].transform.position);
             paths[i].GetComponent<LineRenderer>().SetPosition(1, hit.point);
 
@@ -302,12 +332,13 @@ public class Archery : IBoss, IDamageAble
         anim.SetBool("dead",true);
         anim.SetBool("jumped", true);
         PlaySound(audios.dead);
+        rigid.velocity = Vector2.zero;
         rigid.AddForce(Vector2.right * -move_dir * move_Speed/2 + Vector2.up * move_Speed,ForceMode2D.Impulse);
         gameObject.layer = 9;
         GameManager.Instance.win();
     }
 
-    public void OnDamaged(float dmg, int dir)
+    public void OnDamaged(float dmg, int dir, bool isKnockbackable = false)
     {
         hp -= dmg;
         if (hp < maxhp * (availableSkillcnt) / (maxavailableSkillcnt + 1) && availableSkillcnt > 0)
